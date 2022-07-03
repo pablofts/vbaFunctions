@@ -1,4 +1,140 @@
-Attribute VB_Name = "funciones_varias"
+Attribute VB_Name = "vbafun"
+Function impMtx(mtx, dirimp)
+    
+    Set cel = Range(dirimp)
+    For i = 1 To UBound(mtx)
+        For ii = 1 To UBound(mtx, 2)
+            cel.Offset(i - 1, ii - 1).Value = mtx(i, ii)
+        Next
+    Next
+    
+    impMtx = 1
+    
+End Function
+
+Function transponeRang(dirbas, filst, icolt)
+
+    'dirbas = "Table001__Page_1"
+    'filst = 2 'how many rows are going to be considered as headings
+    'icolt = 4 'after which column are the headings going to be considered
+    
+    'dir rango a transponer
+    mbas = mr(dirbas)
+    filu = UBound(mbas)
+    colu = UBound(mbas, 2)
+    marea = seccionaMtx(mbas, filst + 1, filu, icolt, colu)
+    menct = transponeMtx(seccionaMtx(mbas, 1, filst, icolt, colu))
+    mcolsrep = seccionaMtx(mbas, filst + 1, filu, 1, icolt - 1)
+    
+    'numero de columnas trnaspuestas
+    upboundcols = UBound(menct, 2) + UBound(mcolsrep, 2) + 1 'las no transpuestas, el encabezado transpuesto y los valores -estos últimos en una sola col-
+    
+    'cuántas veces se repetira mcolsrep -según la combinacion única de campos unicos hallados-
+    
+    'matriz transpuesta
+    ReDim mtrans(1 To UBound(menct) * UBound(mcolsrep), 1 To upboundcols)
+    
+    'repite columnas no transpuestas por cada combinación unica de encabezado
+    For i = 1 To UBound(menct)
+        For ii = 1 To UBound(mcolsrep, 2) 'cols
+            For iii = 1 To UBound(mcolsrep) 'filas
+                mtrans(iii + UBound(mcolsrep) * (i - 1), ii) = mcolsrep(iii, ii)
+            Next
+        Next
+    Next
+    
+    'encabezado como etiqueta
+    off = UBound(mcolsrep, 2) 'recorrido por las cols no transpuestas
+    For i = 1 To UBound(menct)
+        For ii = 1 To UBound(menct, 2)
+            For iii = 1 To UBound(mcolsrep)
+                mtrans(iii + UBound(mcolsrep) * (i - 1), off + ii) = menct(i, ii)
+            Next
+        Next
+    Next
+    
+    'contenido
+    off = off + UBound(menct, 2) + 1 'recorrido por las cols no transpuestas y por las columnas etiqueta del encabezado transpuesto
+    For i = 1 To UBound(menct)
+        For ii = 1 To UBound(marea)
+            mtrans(ii + UBound(marea) * (i - 1), off) = marea(ii, i)
+        Next
+    Next
+    
+    transponeRang = mtrans
+    
+End Function
+Function concatFilsMtx(mtx As Variant) '(1 to n, 1 to n)
+    
+    ReDim mconc(1 To 1, 1 To UBound(mtx))
+    
+    For i = 1 To UBound(mtx)
+        strconc = ""
+        For ii = 1 To UBound(mtx, 2)
+            strconc = strconc & mtx(i, ii)
+        Next
+        mconc(1, i) = strconc
+    Next
+    
+    mconct = transponeMtx(mconc)
+    
+    concatFilsMtx = mconct
+    
+End Function
+Function seccionaMtx(mtx As Variant, fili, filu, coli, colu) '(1 to n, 1 to n)
+    
+    fildif = fili - 1
+    coldif = coli - 1
+    
+    ReDim novmtx(fili - fildif To filu - fildif, coli - coldif To colu - coldif)
+    
+    For i = fili To filu
+        For ii = coli To colu
+            novmtx(i - fildif, ii - coldif) = mtx(i, ii)
+        Next
+    Next
+    
+    seccionaMtx = novmtx
+End Function
+
+Function transponeMtx(mtx As Variant) '(1 to n, 1 to n)
+    filu = UBound(mtx)
+    colu = UBound(mtx, 2)
+    
+    ReDim novmtx(1 To colu, 1 To filu)
+    
+    For i = 1 To colu
+        For ii = 1 To filu
+            novmtx(i, ii) = mtx(ii, i)
+        Next
+    Next
+    
+    transponeMtx = novmtx
+End Function
+
+Function unicos(mtx As Variant) '(1 to n)
+
+    ReDim unic(1 To 1)
+    cont = 1
+    For i = LBound(mtx) To UBound(mtx)
+        For ii = LBound(unic) To UBound(unic)
+            If mtx(i, 1) = unic(ii) Then
+                pres = 1
+                Exit For
+            End If
+        Next
+        If pres = 0 Then
+            ReDim Preserve unic(1 To cont)
+            unic(cont) = mtx(i, 1)
+            cont = cont + 1
+        End If
+        pres = 0
+    Next
+    
+    unicos = unic
+End Function
+
+
 Function mr(rangodir) 'As String
     'hace matriz a partir de range.value, aun range es una sola celda
     'entrega una matriz (1 to n, 1 to 1)
