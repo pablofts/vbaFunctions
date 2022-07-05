@@ -29,7 +29,7 @@ Function transponeRang(dirbas, filst, icolt)
     'numero de columnas trnaspuestas
     upboundcols = UBound(menct, 2) + UBound(mcolsrep, 2) + 1 'las no transpuestas, el encabezado transpuesto y los valores -estos últimos en una sola col-
     
-    'cuántas veces se repetira mcolsrep -según la combinacion única de campos unicos hallados-
+    'cuántas veces se repetira mcolsrep -según la combinacion única de campos unic hallados-
     
     'matriz transpuesta
     ReDim mtrans(1 To UBound(menct) * UBound(mcolsrep), 1 To upboundcols)
@@ -112,26 +112,28 @@ Function transponeMtx(mtx As Variant) '(1 to n, 1 to n)
     transponeMtx = novmtx
 End Function
 
-Function unicos(mtx As Variant) '(1 to n)
+Function unic(mtx As Variant) '(1 to n, 1 to 1)
 
-    ReDim unic(1 To 1)
+    ReDim munic(1 To 1, 1 To 1)
     cont = 1
     For i = LBound(mtx) To UBound(mtx)
-        For ii = LBound(unic) To UBound(unic)
-            If mtx(i, 1) = unic(ii) Then
+        For ii = LBound(munic) To UBound(munic)
+            If mtx(i, 1) = munic(1, ii) Then
                 pres = 1
                 Exit For
             End If
         Next
         If pres = 0 Then
-            ReDim Preserve unic(1 To cont)
-            unic(cont) = mtx(i, 1)
+            ReDim Preserve munic(1 To 1, 1 To cont)
+            munic(1, cont) = mtx(i, 1)
             cont = cont + 1
         End If
         pres = 0
     Next
     
-    unicos = unic
+    unict = transponeMtx(unic)
+    
+    unic = unict
 End Function
 
 
@@ -215,10 +217,11 @@ Function filtrador(dirPaResult, dirCrit, criterio) 'as string, as string, as var
     Next
     
     'transpone mtx
-    ReDim mtxt(1 To UBound(mtx, 2), 1 To 1)
-    For i = 1 To UBound(mtxt)
-        mtxt(i, 1) = mtx(1, i)
-    Next
+'    ReDim mtxt(1 To UBound(mtx, 2), 1 To 1)
+'    For i = 1 To UBound(mtxt)
+'        mtxt(i, 1) = mtx(1, i)
+'    Next
+    mtxt = transponeMtx(mtx)
     
     filtrador = mtxt
 
@@ -307,3 +310,38 @@ Function idConsecutivo(dirIds) 'as string
     idConsecutivo = novid
 End Function
 
+Function nombreCol_r(dirref)
+
+    Set ini = Range(dirref)
+    Set ul = Range(dirref).End(xlDown)
+    Range(ul, ini).Name = ini.Name & "_r"
+    
+End Function
+
+Function sumaMtx(mtx As Variant) '(1 to n, 1 to 1)
+    For i = 1 To UBound(mtx)
+        su = su + mtx(i, 1)
+    Next
+    sumaMtx = su
+End Function
+
+Function buscadorMtx(mtxo, mtxb, mtxe) '(1 to n, 1 to 1)
+
+    If Not UBound(mtxe) = UBound(mtxb) Then
+        MsgBox ("Las matrices de incide y coincidir deben ser del mismo tamaño")
+    End If
+    
+    ReDim mtxr(1 To UBound(mtxo), 1 To 1)
+    
+    For i = 1 To UBound(mtxo)
+        For ii = 1 To UBound(mtxb)
+            If mtxo(i) = mtxb(ii) Then
+                mtxr(i) = mtxe(ii)
+                Exit For
+            End If
+        Next
+    Next
+    
+    buscadorMtx = mtxr
+    
+End Function
