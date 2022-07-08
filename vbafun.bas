@@ -117,7 +117,7 @@ Function unic(mtx As Variant) '(1 to n, 1 to 1)
     ReDim munic(1 To 1, 1 To 1)
     cont = 1
     For i = LBound(mtx) To UBound(mtx)
-        For ii = LBound(munic) To UBound(munic)
+        For ii = LBound(munic, 2) To UBound(munic, 2)
             If mtx(i, 1) = munic(1, ii) Then
                 pres = 1
                 Exit For
@@ -131,7 +131,7 @@ Function unic(mtx As Variant) '(1 to n, 1 to 1)
         pres = 0
     Next
     
-    unict = transponeMtx(unic)
+    unict = transponeMtx(munic)
     
     unic = unict
 End Function
@@ -188,10 +188,10 @@ Function buscador(dirOr, dirBus, dirPaResult)  'As String As String As String
     buscador = mtxResult
 End Function
 
-Function filtrador(dirPaResult, dirCrit, criterio) 'as string, as string, as variant
+Function filtrador(dirPaResult, dirCrit, criterio) 'as string, as string, as string
     'filtra en matrices hechas a partir de range.value, aun si range es una sola celda
     'solo filtra pa un criterio
-    'entrega una matriz (1 to n) con una fila en blanco
+    'entrega una matriz (1 to n)
     
     If Not Range(criterio).Count = 1 Then
         MsgBox ("El criterio debe referenciar una sola celda")
@@ -208,11 +208,13 @@ Function filtrador(dirPaResult, dirCrit, criterio) 'as string, as string, as var
     End If
     
     'mtx es una matriz hotizontal
+    cont = 1
     ReDim mtx(1 To 1, 1 To 1)
     For i = 1 To UBound(mtxCrit)
         If mtxCrit(i, 1) = crit Then
-            mtx(1, UBound(mtx, 2)) = mtxPaResult(i, 1)
-            ReDim Preserve mtx(1 To 1, 1 To UBound(mtx, 2) + 1)
+            ReDim Preserve mtx(1 To 1, 1 To cont)
+            mtx(1, cont) = mtxPaResult(i, 1)
+            cont = cont + 1
         End If
     Next
     
@@ -311,10 +313,16 @@ Function idConsecutivo(dirIds) 'as string
 End Function
 
 Function nombreCol_r(dirref)
-
+    
     Set ini = Range(dirref)
-    Set ul = Range(dirref).End(xlDown)
-    Range(ul, ini).Name = ini.Name & "_r"
+    Set ul = Range(dirref).Offset(999999).End(xlUp)
+    If ul.Row = 1 Then
+         Set ul = ul.Offset(1)
+    End If
+    
+    Range(ul, ini).Name = ini.Offset(-1).Value & "_r"
+    
+    nombreCol_r = 1
     
 End Function
 
@@ -328,15 +336,15 @@ End Function
 Function buscadorMtx(mtxo, mtxb, mtxe) '(1 to n, 1 to 1)
 
     If Not UBound(mtxe) = UBound(mtxb) Then
-        MsgBox ("Las matrices de incide y coincidir deben ser del mismo tamaño")
+        MsgBox ("Las matrices de indice y coincidir deben ser del mismo tamaño")
     End If
     
     ReDim mtxr(1 To UBound(mtxo), 1 To 1)
     
     For i = 1 To UBound(mtxo)
         For ii = 1 To UBound(mtxb)
-            If mtxo(i) = mtxb(ii) Then
-                mtxr(i) = mtxe(ii)
+            If mtxo(i, 1) = mtxb(ii, 1) Then
+                mtxr(i, 1) = mtxe(ii, 1)
                 Exit For
             End If
         Next
@@ -344,4 +352,45 @@ Function buscadorMtx(mtxo, mtxb, mtxe) '(1 to n, 1 to 1)
     
     buscadorMtx = mtxr
     
+End Function
+
+Function filtMayorMenor(dirPaResult, dirCrit, dirLinf, dirLsup) 'as string, as string, as string, as string
+    'filtra en matrices hechas a partir de range.value, aun si range es una sola celda
+    'filtra mayor que y menor que
+    'entrega una matriz (1 to n,1 to 1)
+    
+    Linf = Range(dirLinf).Value * 1
+    Lsup = Range(dirLsup).Value * 1
+    
+    'acomda límites, si hace falta
+    If IsEmpty(Linf) Then
+        Linf = 0
+    End If
+    If IsEmpty(Lsup) Then
+        Lsup = 1E+21
+    End If
+    
+    mtxPaResult = mr(dirPaResult)
+    mtxCrit = mr(dirCrit)
+    
+    If Not UBound(mtxCrit) = UBound(mtxPaResult) Then
+        MsgBox ("La region 'criterio' y 'para resultado' deben ser del mismo tamaño")
+        Exit Function
+    End If
+    
+    'mtx es una matriz hotizontal
+    ReDim mtx(1 To 1, 1 To 1)
+    cont = 1
+    For i = 1 To UBound(mtxCrit)
+        If mtxCrit(i, 1) >= Linf And mtxCrit(i, 1) <= Lsup Then
+            ReDim Preserve mtx(1 To 1, 1 To cont)
+            mtx(1, cont) = mtxPaResult(i, 1)
+            cont = cont + 1
+        End If
+    Next
+    
+    mtxt = transponeMtx(mtx)
+    
+    filtMayorMenor = mtxt
+
 End Function
