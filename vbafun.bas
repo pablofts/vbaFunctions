@@ -20,11 +20,11 @@ Function transponeRang(dirbas, filst, icolt)
     
     'dir rango a transponer
     mbas = mr(dirbas)
-    filu = UBound(mbas)
-    colu = UBound(mbas, 2)
-    marea = seccionaMtx(mbas, filst + 1, filu, icolt, colu)
-    menct = transponeMtx(seccionaMtx(mbas, 1, filst, icolt, colu))
-    mcolsrep = seccionaMtx(mbas, filst + 1, filu, 1, icolt - 1)
+    Filu = UBound(mbas)
+    Colu = UBound(mbas, 2)
+    marea = seccionaMtx(mbas, filst + 1, Filu, icolt, Colu)
+    menct = transponeMtx(seccionaMtx(mbas, 1, filst, icolt, Colu))
+    mcolsrep = seccionaMtx(mbas, filst + 1, Filu, 1, icolt - 1)
     
     'numero de columnas trnaspuestas
     upboundcols = UBound(menct, 2) + UBound(mcolsrep, 2) + 1 'las no transpuestas, el encabezado transpuesto y los valores -estos últimos en una sola col-
@@ -81,15 +81,15 @@ Function concatFilsMtx(mtx As Variant) '(1 to n, 1 to n)
     concatFilsMtx = mconct
     
 End Function
-Function seccionaMtx(mtx As Variant, fili, filu, coli, colu) '(1 to n, 1 to n)
+Function seccionaMtx(mtx As Variant, Fili, Filu, Coli, Colu) '(1 to n, 1 to n)
     
-    fildif = fili - 1
-    coldif = coli - 1
+    fildif = Fili - 1
+    coldif = Coli - 1
     
-    ReDim novmtx(fili - fildif To filu - fildif, coli - coldif To colu - coldif)
+    ReDim novmtx(Fili - fildif To Filu - fildif, Coli - coldif To Colu - coldif)
     
-    For i = fili To filu
-        For ii = coli To colu
+    For i = Fili To Filu
+        For ii = Coli To Colu
             novmtx(i - fildif, ii - coldif) = mtx(i, ii)
         Next
     Next
@@ -98,13 +98,13 @@ Function seccionaMtx(mtx As Variant, fili, filu, coli, colu) '(1 to n, 1 to n)
 End Function
 
 Function transponeMtx(mtx As Variant) '(1 to n, 1 to n)
-    filu = UBound(mtx)
-    colu = UBound(mtx, 2)
+    Filu = UBound(mtx)
+    Colu = UBound(mtx, 2)
     
-    ReDim novmtx(1 To colu, 1 To filu)
+    ReDim novmtx(1 To Colu, 1 To Filu)
     
-    For i = 1 To colu
-        For ii = 1 To filu
+    For i = 1 To Colu
+        For ii = 1 To Filu
             novmtx(i, ii) = mtx(ii, i)
         Next
     Next
@@ -114,6 +114,20 @@ End Function
 
 Function unic(mtx As Variant) '(1 to n, 1 to 1)
 
+    'marca cuáles valores son numericos
+    ReDim mtip(1 To UBound(mtx), 1 To 1)
+    For i = 1 To UBound(mtx)
+        If IsNumeric(mtx(i, 1)) Then
+            mtip(i, 1) = 1
+        End If
+    Next
+    
+    'convierte el contenido de mtx a string
+    For i = 1 To UBound(mtx)
+        mtx(i, 1) = CStr(mtx(i, 1))
+    Next
+    
+    'encuentra unicos
     ReDim munic(1 To 1, 1 To 1)
     cont = 1
     For i = LBound(mtx) To UBound(mtx)
@@ -132,6 +146,16 @@ Function unic(mtx As Variant) '(1 to n, 1 to 1)
     Next
     
     unict = transponeMtx(munic)
+    
+    'si era numérico, devuelve a numérico
+    For i = 1 To UBound(mtx)
+        For ii = 1 To UBound(unict)
+            If unict(ii, 1) = mtx(i, 1) And mtip(i, 1) = 1 Then
+                unict(ii, 1) = CLng(unict(ii, 1))
+                Exit For
+            End If
+        Next
+    Next
     
     unic = unict
 End Function
@@ -199,10 +223,10 @@ Function filtrador(dirPaResult, dirCrit, criterio) 'as string, as string, as str
     End If
     
     mtxPaResult = mr(dirPaResult)
-    mtxCrit = mr(dirCrit)
+    mtxcrit = mr(dirCrit)
     crit = Range(criterio).Value
     
-    If Not UBound(mtxCrit) = UBound(mtxPaResult) Then
+    If Not UBound(mtxcrit) = UBound(mtxPaResult) Then
         MsgBox ("La region 'criterio' y 'para resultado' deben ser del mismo tamaño")
         Exit Function
     End If
@@ -210,8 +234,8 @@ Function filtrador(dirPaResult, dirCrit, criterio) 'as string, as string, as str
     'mtx es una matriz hotizontal
     cont = 1
     ReDim mtx(1 To 1, 1 To 1)
-    For i = 1 To UBound(mtxCrit)
-        If mtxCrit(i, 1) = crit Then
+    For i = 1 To UBound(mtxcrit)
+        If mtxcrit(i, 1) = crit Then
             ReDim Preserve mtx(1 To 1, 1 To cont)
             mtx(1, cont) = mtxPaResult(i, 1)
             cont = cont + 1
@@ -290,12 +314,12 @@ Function dentroRango(dirTarget, dirRango) 'as string, dirtarget debe referenciar
         dira = Mid(dirRango, 1, InStr(1, dirRango, ":") - 1)
         dirb = Mid(dirRango, InStr(1, dirRango, ":") + 1, 30)
         
-        coli = Range(dira).Column
-        fili = Range(dira).Row
-        colu = Range(dirb).Column
-        filu = Range(dirb).Row
+        Coli = Range(dira).Column
+        Fili = Range(dira).Row
+        Colu = Range(dirb).Column
+        Filu = Range(dirb).Row
         
-        If colu >= coltar And coltar >= coli And filu >= filtar And filtar >= fili Then
+        If Colu >= coltar And coltar >= Coli And Filu >= filtar And filtar >= Fili Then
             dentroRango = 1
         End If
     End If
@@ -371,9 +395,9 @@ Function filtMayorMenor(dirPaResult, dirCrit, dirLinf, dirLsup) 'as string, as s
     End If
     
     mtxPaResult = mr(dirPaResult)
-    mtxCrit = mr(dirCrit)
+    mtxcrit = mr(dirCrit)
     
-    If Not UBound(mtxCrit) = UBound(mtxPaResult) Then
+    If Not UBound(mtxcrit) = UBound(mtxPaResult) Then
         MsgBox ("La region 'criterio' y 'para resultado' deben ser del mismo tamaño")
         Exit Function
     End If
@@ -381,8 +405,8 @@ Function filtMayorMenor(dirPaResult, dirCrit, dirLinf, dirLsup) 'as string, as s
     'mtx es una matriz hotizontal
     ReDim mtx(1 To 1, 1 To 1)
     cont = 1
-    For i = 1 To UBound(mtxCrit)
-        If mtxCrit(i, 1) >= Linf And mtxCrit(i, 1) <= Lsup Then
+    For i = 1 To UBound(mtxcrit)
+        If mtxcrit(i, 1) >= Linf And mtxcrit(i, 1) <= Lsup Then
             ReDim Preserve mtx(1 To 1, 1 To cont)
             mtx(1, cont) = mtxPaResult(i, 1)
             cont = cont + 1
@@ -393,4 +417,41 @@ Function filtMayorMenor(dirPaResult, dirCrit, dirLinf, dirLsup) 'as string, as s
     
     filtMayorMenor = mtxt
 
+End Function
+
+Function fullAddress(rang) 'as string
+    fullnm = rang.Parent.Name & "!" & rang.Address(External:=False)
+    fullAddress = fullnm
+End Function
+
+Function encMax(mtx As Variant) '(1 to n, 1 to 1), entrega escalar
+    
+    vmax = 0
+    For i = 1 To UBound(mtx)
+        If mtx(i, 1) > vmax Then
+            vmax = mtx(i, 1)
+        End If
+    Next
+    
+    encMax = vmax
+    
+End Function
+
+Function agSum(mtx As Variant)  '(1 to n, 1 to 2)
+    
+    mcrit = seccionaMtx(mtx, 1, UBound(mtx), 1, 1)
+    umcrit = unic(mtx)
+    
+    For i = 1 To UBound(umcrit)
+        For ii = 1 To UBound(mcrit)
+            If umcrit(i, 1) = mcrit(ii, 1) Then
+                su = su + mtx(ii, 2)
+            End If
+        Next
+        umcrit(i, 1) = su
+        su = 0
+    Next
+    
+    agSum = umcrit
+    
 End Function
