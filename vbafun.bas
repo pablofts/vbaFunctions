@@ -2,6 +2,7 @@ Attribute VB_Name = "vbafun"
 Function impMtx(mtx, dirimp)
     
     Set cel = Range(dirimp)
+    
     For i = 1 To UBound(mtx)
         For ii = 1 To UBound(mtx, 2)
             cel.Offset(i - 1, ii - 1).Value = mtx(i, ii)
@@ -455,3 +456,28 @@ Function agSum(mtx As Variant)  '(1 to n, 1 to 2)
     agSum = umcrit
     
 End Function
+
+Function mochaFilas(mtx, mfils) 'quiza arreglos pendientes
+
+    ReDim nmtx(1 To UBound(mtx) - UBound(mfils), 1 To 1)
+    
+    j = 1
+    For i = 1 To UBound(mtx)
+        pres = 0
+        For ii = 1 To UBound(mfils)
+            If mfils(ii, 1) = i Then
+                pres = 1
+                Exit For
+            End If
+        Next
+        If pres = 0 Then
+            nmtx(j, 1) = mtx(i, 1)
+            j = j + 1
+        End If
+    Next
+    
+    mochaFilas = nmtx
+    
+End Function
+
+'pendiente filas colores alternados, está en min gallo
