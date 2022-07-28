@@ -225,7 +225,7 @@ Function filtrador(dirPaResult, dirCrit, criterio) 'as string, as string, as str
     
     mtxPaResult = mr(dirPaResult)
     mtxcrit = mr(dirCrit)
-    crit = Range(criterio).Value
+    Crit = Range(criterio).Value
     
     If Not UBound(mtxcrit) = UBound(mtxPaResult) Then
         MsgBox ("La region 'criterio' y 'para resultado' deben ser del mismo tamaño")
@@ -236,7 +236,7 @@ Function filtrador(dirPaResult, dirCrit, criterio) 'as string, as string, as str
     cont = 1
     ReDim mtx(1 To 1, 1 To 1)
     For i = 1 To UBound(mtxcrit)
-        If mtxcrit(i, 1) = crit Then
+        If mtxcrit(i, 1) = Crit Then
             ReDim Preserve mtx(1 To 1, 1 To cont)
             mtx(1, cont) = mtxPaResult(i, 1)
             cont = cont + 1
@@ -481,3 +481,41 @@ Function mochaFilas(mtx, mfils) 'quiza arreglos pendientes
 End Function
 
 'pendiente filas colores alternados, está en min gallo
+
+Function dirPrimFil(dir)
+    
+    dirfulladd = fullAddress(Range(dir))
+    mbas = mr(dir)
+    cols = UBound(mbas, 2)
+    fils = UBound(mbas)
+    
+    PrimFil = Mid( _
+                dirfulladd, _
+                InStr(InStr(1, dirfulladd, "$") + 1, dirfulladd, "$") + 1, _
+                1 _
+                )
+    dirPrimFil = Left(dirfulladd, Len(dirfulladd) - 1) & PrimFil
+    
+End Function
+
+Function DosColores(dirbas, dircol) 'as string, as string
+
+    mcol = mr(dircol)
+    
+    dirIniFil = dirPrimFil(dirbas)
+    
+    Set rPrimFil = Range(dirIniFil)
+    
+    For i = 2 To UBound(mcol)
+        If mcol(i, 1) = mcol(i - 1, 1) Then
+            rPrimFil.Offset(i - 1).Interior.ColorIndex = _
+                rPrimFil.Offset(i - 2).Interior.ColorIndex
+        Else
+            If rPrimFil.Offset(i - 2).Interior.ColorIndex = 37 Then
+                rPrimFil.Offset(i - 1).Interior.ColorIndex = 2
+            Else
+                rPrimFil.Offset(i - 1).Interior.ColorIndex = 37
+            End If
+        End If
+    Next
+End Function
